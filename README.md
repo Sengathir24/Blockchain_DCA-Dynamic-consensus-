@@ -268,4 +268,3 @@ Launch the simulator and explore how machine learning can drive consensus evolut
 
 ---
 
-Would you like me to add **section dividers** or **center-aligned headers** (for example, “Architecture Diagram” and “Screenshots”) to make it more visually refined for GitHub presentation?
