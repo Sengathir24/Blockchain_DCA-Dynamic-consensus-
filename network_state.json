@@ -1,0 +1,70 @@
+{
+    "chain": [
+        {
+            "index": 0,
+            "timestamp": 1761421123.9192412,
+            "transactions": [
+                {
+                    "message": "Genesis Block",
+                    "predicted_consensus": "PoW"
+                }
+            ],
+            "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+            "nonce": 0,
+            "proposer": "Genesis"
+        },
+        {
+            "index": 1,
+            "timestamp": 1761421600.6597652,
+            "transactions": [
+                {
+                    "sender": "Sengathir",
+                    "recipient": "Node-A",
+                    "amount": 1000,
+                    "fee": 1,
+                    "timestamp": 1761421400.3514361,
+                    "id": "cdafe584-1586-455e-a8d6-dbb9b9d7543e",
+                    "predicted_consensus": "PoS"
+                },
+                {
+                    "sender": "Sengathir",
+                    "recipient": "Node-C2",
+                    "amount": 10,
+                    "fee": 1,
+                    "timestamp": 1761421477.4505675,
+                    "id": "f25e856a-8453-4125-bc09-bb993c0eb552"
+                }
+            ],
+            "previous_hash": "a277438ed8ad08d97e1f5bc138894072b0782eb68a3b445f27f426227ca51cdf",
+            "nonce": 0,
+            "proposer": "Node-C2"
+        }
+    ],
+    "pending_transactions": [],
+    "nodes": {
+        "Node-A": {
+            "stake": 100,
+            "address": "38432018-7efa-4e09-be5c-7ba08b78fe6b",
+            "chain_length": 2
+        },
+        "Node-C2": {
+            "stake": 1234,
+            "address": "64639833-aa5e-4958-b004-95ecc680a780",
+            "chain_length": 2
+        }
+    },
+    "consensus_mode": "PoS",
+    "difficulty": 3,
+    "consensus_algos": [
+        "PoW",
+        "PoS",
+        "Raft",
+        "PBFT",
+        "HotStuff"
+    ],
+    "active_users": {
+        "Sengathir": true,
+        "UserB": true
+    },
+    "pending_users": {}
+}

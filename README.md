@@ -21,22 +21,22 @@ This project is intended for blockchain developers, students, and researchers ex
 
 ## ⚙️ Core Features
 
-✅ **Multi-Consensus Simulation:**
+ **Multi-Consensus Simulation:**
 Switch between 5 consensus algorithms — PoW, PoS, Raft, PBFT, and HotStuff.
 
-✅ **Dynamic Consensus via ML:**
+**Dynamic Consensus via ML:**
 An integrated **Decision Tree Classifier** predicts the optimal consensus algorithm based on traffic, latency, and transaction density.
 
-✅ **Flask Web Interface (Tailwind UI):**
+**Flask Web Interface (Tailwind UI):**
 Visualize the blockchain state, nodes, and governance activity in real time.
 
-✅ **Governance & Voting System:**
+**Governance & Voting System:**
 Pending users must be approved via **on-chain-like voting** from existing users.
 
-✅ **Persistent State:**
+**Persistent State:**
 All blockchain, node, and credential data are persisted locally using JSON and CSV files.
 
-✅ **Headless API Access:**
+**Headless API Access:**
 Full control via REST endpoints — useful for automation or integration into external systems.
 
 ---
