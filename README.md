@@ -101,7 +101,7 @@ pip install flask pandas numpy scikit-learn joblib werkzeug
 1. **Navigate to your project directory:**
 
    ```bash
-   cd "C:\Users\Dell\Downloads\all_five\all_five"
+   cd "C:\Users\Device\PATH_____________"
    ```
 
 2. **Run the Flask simulator:**
