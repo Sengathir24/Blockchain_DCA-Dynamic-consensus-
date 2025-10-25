@@ -244,13 +244,6 @@ You are free to modify and distribute the simulator with proper attribution.
 
 ---
 
-## 📬 Contact
-
-If you'd like additional support or collaboration opportunities, I can:
-
-* Add a `requirements.txt` file for reproducible setup
-* Write a `setup_env.py` script for automatic environment configuration
-* Implement basic unit tests for critical modules
 
 **Happy experimenting!**
 Launch the simulator and explore how machine learning can drive consensus evolution in blockchain systems.
