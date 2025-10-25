@@ -139,6 +139,20 @@ all_five/
 ```
 
 ---
+### UI Screenshots
+
+![Ledger & Pending Transactions](https://raw.githubusercontent.com/Sengathir24/Blockchain_DCA-Dynamic-consensus-/main/Screenshots/Ledger_pending.jpg)  
+*Screenshot: Ledger with pending transactions*
+
+![Login Page](https://raw.githubusercontent.com/Sengathir24/Blockchain_DCA-Dynamic-consensus-/main/Screenshots/Login_page.jpg)  
+*Screenshot: Login page*
+
+![Main Page](https://raw.githubusercontent.com/Sengathir24/Blockchain_DCA-Dynamic-consensus-/main/Screenshots/Main_page.jpg)  
+*Screenshot: Main dashboard page*
+
+![Top Notification Banner](https://raw.githubusercontent.com/Sengathir24/Blockchain_DCA-Dynamic-consensus-/main/Screenshots/Notification_top.jpg)  
+*Screenshot: Notification banner at top*
+---
 
 ## 🔐 Authentication and Governance
 
