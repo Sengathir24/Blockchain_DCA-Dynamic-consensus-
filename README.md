@@ -103,13 +103,13 @@ You may also use a pre-defined `requirements.txt` for reproducible installations
 1. **Navigate to the project directory:**
 
    ```bash
-   cd "C:\Users\YourSystem\all_five"
+   cd "C:\Users\YourSystem\Blockchain_DCA-Dynamic-consensus-\"
    ```
 
 2. **Run the Flask application:**
 
    ```bash
-   python app3.py
+   python app1.py
    ```
 
 3. **Access the web interface:**
@@ -127,10 +127,10 @@ You may also use a pre-defined `requirements.txt` for reproducible installations
 ## Directory Structure
 
 ```
-all_five/
+Blockchain_DCA-Dynaminc-consensus-/
 │
-├── app3.py                         # Main Flask application
-├── app.py, app1.py, dynamic_algo.py # Experimental versions
+├── app1.py                         # Main Flask application
+├── app3.py, dynamic_algo.py # Experimental versions
 ├── blockchain_traffic_trafficsim.csv # Dataset for ML training
 ├── decision_tree_consensus.pkl      # Trained ML model (optional)
 ├── label_encoder.pkl                # Encoded consensus label mapping

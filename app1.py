@@ -1,7 +1,6 @@
 # app.py - ConcordiaChain: ML-Driven Dynamic Consensus Blockchain Simulator
 #
-# A single-file Flask app implementing a multi-node, multi-consensus blockchain
-# with ML-driven dynamic consensus, high-aesthetic UI, and CSV-backed Auth.
+# **FIXED:** Multi-user session handling and governance persistence logic fixed.
 #
 # Key Feature: State Persistence and Community Governance for new users.
 #
@@ -23,9 +22,10 @@ MODEL_PATH = r"C:\Users\Dell\Downloads\Blockchain_DCA-Dynamic-consensus-\decisio
 LABEL_ENCODER_PATH = r"C:\Users\Dell\Downloads\Blockchain_DCA-Dynamic-consensus-\label_encoder.pkl"
 DATA_PATH = r"C:\Users\Dell\Downloads\Blockchain_DCA-Dynamic-consensus-\blockchain_traffic_trafficsim.csv"
 
-NETWORK_STATE_FILE = r"C:\Users\Dell\Downloads\Blockchain_DCA-Dynamic-consensus-\network_state.json" # New file for state persistence
+NETWORK_STATE_FILE = r"C:\Users\Dell\Downloads\Blockchain_DCA-Dynamic-consensus-\network_state.json"  # New file for state persistence
 USERS: Dict[str, str] = {} # {username: hashed_password}
 MAX_NODES = 5
+DEFAULT_USERS = {'Sengathir': '12245', 'UserB': 'defaultpass'} # Defined here for cleaner use
 
 # --- Credential Management Functions (Unchanged) ---
 def load_users_from_csv():
@@ -189,9 +189,6 @@ class Network:
 
     def get_last_block(self) -> Block:
         return self.chain[-1]
-    
-    # --- Other blockchain methods (run_pow, add_transaction, etc.) remain the same ---
-    # (Removed for brevity, but they are fully included in the final file below)
     
     def add_node(self, name, stake=100, is_initial=False):
         if len(self.nodes) >= MAX_NODES and not is_initial:
@@ -433,29 +430,31 @@ def load_network_state():
             network.nodes = state.get('nodes', network.nodes) # Keep Node-A if state is missing nodes
             network.consensus_mode = state.get('consensus_mode', 'PoW')
             network.difficulty = state.get('difficulty', 3)
+            # CRITICAL: Restore user state from file first
             network.active_users = state.get('active_users', {})
             network.pending_users = state.get('pending_users', {})
             
             # Re-ensure genesis block if chain was empty or failed to load
             if not network.chain:
                  network.create_genesis_block()
-
-            # print("✅ Network state loaded from file.") # Disabled for cleaner console
             
         except Exception as e:
             print(f"❌ Error loading network state: {e}. Reinitializing network.")
             network = Network() # Reset on failure
 
-    ensure_default_users()
+    ensure_default_users() # <-- This call now correctly respects the loaded state
 
 def ensure_default_users():
-    """Ensures two users are always active and handles initial state."""
+    """
+    Ensures two users are always active and handles initial state.
+    This logic is critical to ensuring the voting quorum is always maintained,
+    and it respects pending_users loaded from the file.
+    """
+    global USERS, network
+    changed_credentials = False
     
     # 1. Ensure minimum two users in credentials
-    default_users = {'Sengathir': '12245', 'UserB': 'defaultpass'}
-    changed_credentials = False
-
-    for username, password in default_users.items():
+    for username, password in DEFAULT_USERS.items():
         if username not in USERS:
             USERS[username] = generate_password_hash(password)
             changed_credentials = True
@@ -463,19 +462,26 @@ def ensure_default_users():
     if changed_credentials:
         save_users_to_csv()
     
-    # 2. Ensure minimum two users are active in the network state
+    # 2. Re-evaluate active users list (FIXED FOR ROBUSTNESS)
+    new_active_users = {}
+    
+    # A user is active if they are in the USERS dict AND NOT in the pending_users list.
+    for username in USERS.keys():
+        if username not in network.pending_users:
+            if username in network.active_users or username in DEFAULT_USERS:
+                 new_active_users[username] = True
+
+    if new_active_users != network.active_users:
+        network.active_users = new_active_users
+        
+    # Check if the minimum two users are active (Sengathir, UserB)
     if len(network.active_users) < 2:
-        for username in default_users.keys():
-            if username in USERS:
+        for username in DEFAULT_USERS.keys():
+            if username in USERS and username not in network.pending_users and username not in network.active_users:
                 network.active_users[username] = True
     
-    # Prune active users who are no longer in USERS or are now pending
-    users_to_remove = [u for u in network.active_users if u not in USERS or u in network.pending_users]
-    for u in users_to_remove:
-         del network.active_users[u]
-
-    # Save state if defaults were added
-    if len(network.active_users) >= 2:
+    # 3. Save state if any defaults were enforced or if there are pending users to save
+    if changed_credentials or len(network.active_users) >= 2 or len(network.pending_users) > 0:
          save_network_state()
 # -------------------------------------
 # Application Setup and Route Wrappers
@@ -483,7 +489,7 @@ def ensure_default_users():
 
 # Initialize the network simulation and state
 network = None 
-load_network_state() # Will also ensure default users
+load_network_state() 
 
 # A simple wrapper to handle persistence for API/Action routes
 def persist_action(func):
@@ -502,8 +508,12 @@ def check_login():
     # Exclude login, signup, and static files
     if request.path in ['/login', '/signup', '/'] or request.path.startswith('/static'):
         return
+    # CRITICAL FIX: Load state again just before check, ensures the user's status is up to date 
+    # (they might have been approved since their last login attempt)
+    load_network_state() 
     if 'logged_in' not in session:
         return redirect(url_for('login'))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -527,7 +537,6 @@ def login():
         else:
             message = "Username not found. Please sign up."
     
-    save_network_state() # Save state if network loaded correctly (no functional change here)
     return render_template_string(LOGIN_HTML, message=message, is_login=True)
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -543,13 +552,15 @@ def signup():
             message = "Username and password are required."
         elif username in USERS:
             message = f"Username '{username}' already exists."
+        elif username in DEFAULT_USERS.keys():
+            message = "Cannot register a default username. Please login or choose another name."
         else:
             # 1. Hash the password and save the new user credential
             hashed_password = generate_password_hash(password)
             USERS[username] = hashed_password
             save_users_to_csv()
             
-            # 2. Add user to pending list (initializes with an empty voter list)
+            # 2. Add user to pending list 
             network.pending_users[username] = []
             save_network_state() # Save network state with new pending user
             
@@ -599,6 +610,7 @@ def get_state():
 def get_users():
     load_network_state()
     active_count = len(network.active_users)
+    # Majority threshold is (Active Count / 2) + 1
     majority_threshold = int(active_count / 2) + 1
     
     # Prepare pending list for UI
@@ -631,15 +643,18 @@ def vote_user():
     if voter not in network.active_users:
         return jsonify({'success': False, 'message': 'Only active users can vote.'})
     
+    # Recalculate active count and threshold *inside* the vote logic for accuracy
+    active_count = len(network.active_users)
+    majority_threshold = int(active_count / 2) + 1
+    
     current_voters = network.pending_users.get(target_user, [])
     if voter in current_voters:
         return jsonify({'success': False, 'message': f'You have already voted for {target_user}.'})
 
     current_voters.append(voter)
     
-    active_count = len(network.active_users)
-    majority_threshold = int(active_count / 2) + 1
     current_votes = len(current_voters)
+    network.pending_users[target_user] = current_voters # Update list reference
 
     if current_votes >= majority_threshold:
         # Approval granted
@@ -653,8 +668,6 @@ def vote_user():
 
     return jsonify({'success': True, 'message': message, 'approved': approved})
 
-
-# --- Persisted Simulation API Routes ---
 
 @app.route('/api/add_node', methods=['POST'])
 @persist_action
@@ -739,8 +752,9 @@ def resolve_conflicts_route():
     return jsonify(result)
 
 # -----------------------------
-# HTML TEMPLATES (Aesthetic UI/UX with Governance)
+# HTML TEMPLATES (Aesthetic UI/UX with Governance) - Unchanged
 # -----------------------------
+# ... (HTML templates remain the same as the previous response) ...
 
 LOGIN_HTML = """
 <!DOCTYPE html>
@@ -1330,13 +1344,17 @@ setInterval(refresh, 4000); // Poll for state every 4 seconds
 </body>
 </html>
 """
+
 if __name__ == '__main__':
     # Add a couple of initial nodes for a better start
     node_names = ['Node-B', 'Node-C']
     for name in node_names:
-        network.add_node(name, stake=200 + random.randint(0, 100))
+        # Check if the node is already present before attempting to add
+        if name not in network.nodes:
+             network.add_node(name, stake=200 + random.randint(0, 100))
 
     print("\n--- ConcordiaChain Simulator ---")
     print(f"Credentials loaded from: {CREDENTIALS_FILE}")
     print(f"Total Users: {len(USERS)}")
-    app.run(debug=True, use_reloader=False)
+    # Note: Setting use_reloader=False is important to prevent duplicate execution of setup code.
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
